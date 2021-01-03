@@ -40,6 +40,38 @@ namespace dashboard
             return !String.IsNullOrEmpty(arg) ? (T)Convert.ChangeType(arg, typeof(T)) : dft;
         }
 
+        private static void processProfiles(string[] args)
+        {
+            foreach (string arg in args)
+            {
+                List<object> profile = getProfile(arg);
+
+                if (!String.IsNullOrEmpty((string)profile[0]))
+                {
+                    Process p = new Process();
+                    p.StartInfo.UseShellExecute = true;
+                    p.StartInfo.FileName = (string)profile[0];
+                    if (!String.IsNullOrEmpty((string)profile[1]))
+                    {
+                        p.StartInfo.Arguments = (string)profile[1];
+                    }
+                    p.Start();
+
+                    Thread.Sleep(1000);
+
+                    positionWindow(
+                        (string)profile[0],
+                        (string)profile[1],
+                        (int)profile[2],
+                        (int)profile[3],
+                        (int)profile[4],
+                        (int)profile[5],
+                        (int)profile[6]
+                    );
+                }
+            }
+        }
+
         private static List<object> getProfile(string arg)
         {
             string[] profile = arg.Split(";");
@@ -94,7 +126,7 @@ namespace dashboard
             return where;
         }
 
-        private static Boolean positionWindow(string exe, string args, int x, int y, int cx, int cy, int zPos)
+        private static void positionWindow(string exe, string args, int x, int y, int cx, int cy, int zPos)
         {
             ManagementObjectSearcher mos = new ManagementObjectSearcher(getQuery(exe, args));
 
@@ -108,53 +140,17 @@ namespace dashboard
                     {
                         ShowWindow(p.MainWindowHandle, 1);
                         SetWindowPos(p.MainWindowHandle, zPos, x, y, cx, cy, 0x00);
-
-                        return true;
                     }
-
-                    return false;
                 }
-                catch (Exception)
-                {
-                    return false;
-                }
+                catch (Exception) {}
             }
-
-            return false;
         }
 
         static void Main(string[] args)
         {
             if (args.Length > 0)
             {
-                foreach (string arg in args)
-                {
-                    List<object> profile = getProfile(arg);
-
-                    if (!String.IsNullOrEmpty((string)profile[0]))
-                    {
-                        Process p = new Process();
-                        p.StartInfo.UseShellExecute = true;
-                        p.StartInfo.FileName = (string)profile[0];
-                        if (!String.IsNullOrEmpty((string)profile[1]))
-                        {
-                            p.StartInfo.Arguments = (string)profile[1];
-                        }
-                        p.Start();
-
-                        Thread.Sleep(1000);
-
-                        positionWindow(
-                            (string)profile[0],
-                            (string)profile[1],
-                            (int)profile[2],
-                            (int)profile[3],
-                            (int)profile[4],
-                            (int)profile[5],
-                            (int)profile[6]
-                        );
-                    }
-                }
+                processProfiles(args);
             }
         }
     }
