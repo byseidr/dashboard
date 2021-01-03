@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dashboard": {
+      "commandName": "Project",
+      "commandLineArgs": "\"code;;0;0;1200;200;bottom\""
+    }
+  }
+}
