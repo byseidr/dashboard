@@ -1,8 +1,11 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -40,51 +43,57 @@ namespace dashboard
             return !String.IsNullOrEmpty(arg) ? (T)Convert.ChangeType(arg, typeof(T)) : dft;
         }
 
-        private static void processProfiles(string[] args)
+        private static void processProfiles(Dictionary<string, dynamic> profile)
         {
-            foreach (string arg in args)
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = true;
+            p.StartInfo.FileName = (string)profile["exe"];
+            if (!String.IsNullOrEmpty((string)profile["args"]))
             {
-                List<object> profile = getProfile(arg);
-
-                if (!String.IsNullOrEmpty((string)profile[0]))
-                {
-                    Process p = new Process();
-                    p.StartInfo.UseShellExecute = true;
-                    p.StartInfo.FileName = (string)profile[0];
-                    if (!String.IsNullOrEmpty((string)profile[1]))
-                    {
-                        p.StartInfo.Arguments = (string)profile[1];
-                    }
-                    p.Start();
-
-                    Thread.Sleep(1000);
-
-                    positionWindow(
-                        (string)profile[0],
-                        (string)profile[1],
-                        (int)profile[2],
-                        (int)profile[3],
-                        (int)profile[4],
-                        (int)profile[5],
-                        (int)profile[6]
-                    );
-                }
+                p.StartInfo.Arguments = (string)profile["args"];
             }
+            p.Start();
+
+            Thread.Sleep(1000);
+
+            positionWindow(
+                (string)profile["exe"],
+                (string)profile["args"],
+                (int)profile["x"],
+                (int)profile["y"],
+                (int)profile["cx"],
+                (int)profile["cy"],
+                (int)profile["zPos"]
+            );
         }
 
-        private static List<object> getProfile(string arg)
+        private static Dictionary<string, dynamic> objToProfile(Dictionary<string, dynamic> profile)
         {
-            string[] profile = arg.Split(";");
+            Dictionary<string, dynamic> result = new Dictionary<string, dynamic>(){
+                {"exe", (string)profile["exe"]},
+                {"args", (string)profile["args"]},
+                {"x", getAttr((string)profile["x"], 200)},
+                {"y", getAttr((string)profile["y"], 100)},
+                {"cx", getAttr((string)profile["cx"], 1000)},
+                {"cy", getAttr((string)profile["cy"], 600)},
+                {"zPos", zPos[getAttr((string)profile["zPos"], "notopmost")]}
+            };
 
-            List<object> result = new List<object>(){
-                // Exe + args
-                {origAttr(profile, 0)}, {origAttr(profile, 1)},
-                // X, Y
-                {getAttr(origAttr(profile, 2), 200)}, {getAttr(origAttr(profile, 3), 100)},
-                // Width, height
-                {getAttr(origAttr(profile, 4), 1000)}, {getAttr(origAttr(profile, 5), 600)},
-                // Z order
-                {zPos[getAttr(origAttr(profile, 6), "notopmost")]}
+            return result;
+        }
+
+        private static Dictionary<string, dynamic> argToObj(string arg)
+        {
+            string[] attr = arg.Split(";");
+
+            Dictionary<string, dynamic> result = new Dictionary<string, dynamic>(){
+                {"exe", origAttr(attr, 0)},
+                {"args", origAttr(attr, 1)},
+                {"x", origAttr(attr, 2)},
+                {"y", origAttr(attr, 3)},
+                {"cx", origAttr(attr, 4)},
+                {"cy", origAttr(attr, 5)},
+                {"zPos", origAttr(attr, 6)}
             };
 
             return result;
@@ -146,11 +155,45 @@ namespace dashboard
             }
         }
 
+        public static string[] getArgs(string[] arr)
+        {
+            return arr.Where((e, i) => i != 0).ToArray();
+        }
+
         static void Main(string[] args)
         {
             if (args.Length > 0)
             {
-                processProfiles(args);
+                switch (args[0])
+                {
+                    case "-p":
+                        foreach (string arg in getArgs(args))
+                        {
+                            Dictionary<string, dynamic> profile = objToProfile(argToObj(arg));
+
+                            if (!String.IsNullOrEmpty((string)profile["exe"]))
+                            {
+                                //Console.WriteLine(profile["exe"]);
+                                processProfiles(profile);
+                            }
+                        }
+                        break;
+                    case "-e":
+                        string envsPath = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\.config\dashboard\environments.json");
+                        dynamic envsObj = JsonConvert.DeserializeObject(File.ReadAllText(envsPath));
+
+                        foreach (JObject arg in envsObj[args[1]])
+                        {
+                            Dictionary<string, dynamic> profile = objToProfile(arg.ToObject<Dictionary<string, dynamic>>());
+
+                            if (!String.IsNullOrEmpty((string)profile["exe"]))
+                            {
+                                //Console.WriteLine(profile["exe"]);
+                                processProfiles(profile);
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
