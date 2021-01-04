@@ -20,7 +20,7 @@ namespace dashboard
         public static string GetProcessQueryByExe(string exe, string args)
         {
             exe = exe.Replace("\\", "\\\\");
-            File file = new File(exe);
+            Resource file = new Resource(exe);
             file.GetRegPath();
 
             string query;

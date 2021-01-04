@@ -45,9 +45,9 @@ namespace dashboard
 
         private static void DoEnvironment(string[] args)
         {
-            dynamic envsObj = FileManager.ParseJSON(@"%USERPROFILE%\.config\dashboard\environments.json");
+            dynamic environment = EnvironmentManager.GetEnvironment(args[0]);
 
-            foreach (JObject arg in envsObj[args[0]])
+            foreach (JObject arg in environment)
             {
                 Profile profile = new Profile(arg.ToObject<Dictionary<string, string>>());
 
@@ -61,15 +61,28 @@ namespace dashboard
 
         private static void DoAdd(string[] args)
         {
-            IntPtr hwnd = WindowManager.GetActiveWindow();
-            Dictionary<string, string> profileObj = ProfileManager.GetProfileFromHWND(hwnd);
-            Profile profile = new Profile(profileObj);
+            string environment = args[0];
+            string source = args[1];
 
-            dynamic envsObj = FileManager.ParseJSON(@"%USERPROFILE%\.config\dashboard\environments.json");
-            JArray environment = (JArray)envsObj[args[0]];
-            environment.Add(JToken.FromObject(profile));
+            if (environment.Length > 0 && source.Length > 0)
+            {
+                IntPtr hwnd;
 
-            Console.WriteLine(envsObj.ToString());
+                if (source == "active")
+                {
+                    hwnd = WindowManager.GetActiveWindow();
+                }
+                else
+                {
+                    hwnd = WindowManager.GetWindowByTitle(source);
+                }
+
+
+                Dictionary<string, string> profileObj = ProfileManager.GetProfileFromHWND(hwnd);
+                Profile profile = new Profile(profileObj);
+
+                EnvironmentManager.AddProfileToEnvironment(profile, environment);
+            }
         }
     }
 }

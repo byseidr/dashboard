@@ -3,13 +3,13 @@ using System.IO;
 
 namespace dashboard
 {
-    class File
+    class Resource
     {
         public string name;
         public string args { get; set; } = "";
         public string regPath { get; set; } = "";
 
-        public File(string name)
+        public Resource(string name)
         {
             this.name = name.Trim();
         }

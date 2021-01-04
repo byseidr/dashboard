@@ -33,19 +33,19 @@ namespace dashboard
                 try
                 {
                     Process p = Process.GetProcessById(Convert.ToInt32(mo["ProcessId"]));
-                    File file = new File((string)mo["CommandLine"]);
+                    Resource file = new Resource((string)mo["CommandLine"]);
                     file.SplitName();
                     Dictionary<string, int> position = WindowManager.GetWindowPosition(p.MainWindowTitle);
 
                     return new Dictionary<string, string>()
                     {
-                        { "exe", file.name },
-                        { "args", file.args },
-                        { "x", position["x"].ToString() },
-                        { "y", position["y"].ToString() },
-                        { "cx", position["cx"].ToString() },
-                        { "cy", position["cy"].ToString() },
-                        { "zPos", "" }
+                        { "Exe", file.name },
+                        { "Args", file.args },
+                        { "X", position["x"].ToString() },
+                        { "Y", position["y"].ToString() },
+                        { "CX", position["cx"].ToString() },
+                        { "CY", position["cy"].ToString() },
+                        { "ZPos", "" }
                     };
                 }
                 catch (Exception)

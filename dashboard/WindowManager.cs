@@ -57,6 +57,11 @@ namespace dashboard
             return IntPtr.Zero;
         }
 
+        public static IntPtr GetWindowByTitle(string title)
+        {
+            return FindWindow(null, title);
+        }
+
         public static Dictionary<string, int> GetWindowPosition(string title)
         {
             if (SpinWait.SpinUntil(() => FindWindow(null, title) != IntPtr.Zero, TimeSpan.FromSeconds(30)))

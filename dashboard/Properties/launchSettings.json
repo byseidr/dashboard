@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dashboard": {
-      "commandName": "Project",
-      "commandLineArgs": "-a \"Hacker\""
+      "commandName": "Project"
     }
   }
 }
