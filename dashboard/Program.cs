@@ -29,59 +29,112 @@ namespace dashboard
             }
         }
 
-        private static void DoProfile(string[] args)
+        private static Boolean DoProfile(string[] args)
         {
-            foreach (string arg in args)
+            try
             {
-                Profile profile = new Profile(arg.Split(";"));
-
-                if (!String.IsNullOrEmpty(profile.Exe))
+                foreach (string arg in args)
                 {
-                    //Console.WriteLine(profile["exe"]);
-                    ProfileManager.RunProfile(profile);
+                    Profile profile = new Profile(arg.Split(";"));
+
+                    if (!String.IsNullOrEmpty(profile.Exe))
+                    {
+                        //Console.WriteLine(profile["exe"]);
+                        ProfileManager.RunProfile(profile);
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
+
+                return false;
+            }
+            catch (Exception exception)
+            {
+                ResourceManager.WriteLog(exception);
+                return false;
             }
         }
 
-        private static void DoEnvironment(string[] args)
+        private static Boolean DoEnvironment(string[] args)
         {
-            dynamic environment = EnvironmentManager.GetEnvironment(args[0]);
-
-            foreach (JObject arg in environment)
+            try
             {
-                Profile profile = new Profile(arg.ToObject<Dictionary<string, string>>());
+                dynamic environment = EnvironmentManager.GetEnvironment(args[0]);
 
-                if (!String.IsNullOrEmpty(profile.Exe))
+                foreach (JObject arg in environment)
                 {
-                    //Console.WriteLine(profile["exe"]);
-                    ProfileManager.RunProfile(profile);
+                    Profile profile = new Profile(arg.ToObject<Dictionary<string, string>>());
+
+                    if (!String.IsNullOrEmpty(profile.Exe))
+                    {
+                        //Console.WriteLine(profile["exe"]);
+                        ProfileManager.RunProfile(profile);
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
+
+                return false;
+            }
+            catch (Exception exception)
+            {
+                ResourceManager.WriteLog(exception);
+                return false;
             }
         }
 
-        private static void DoAdd(string[] args)
+        private static Boolean DoAdd(string[] args)
         {
-            string environment = args[0];
-            string source = args[1];
-
-            if (environment.Length > 0 && source.Length > 0)
+            try
             {
-                IntPtr hwnd;
+                string environment = args[0];
+                string source = args[1];
 
-                if (source == "active")
+                if (environment.Length > 0 && source.Length > 0)
                 {
-                    hwnd = WindowManager.GetActiveWindow();
+                    IntPtr hwnd;
+
+                    if (source == "active")
+                    {
+                        hwnd = WindowManager.GetActiveWindow();
+                    }
+                    else
+                    {
+                        hwnd = WindowManager.GetWindowByTitle(source);
+                    }
+
+
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        Dictionary<string, string> profileObj = ProfileManager.GetProfileFromHWND(hwnd);
+                        Profile profile = new Profile(profileObj);
+
+                        EnvironmentManager.AddProfileToEnvironment(profile, environment);
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    hwnd = WindowManager.GetWindowByTitle(source);
+                    return false;
                 }
-
-
-                Dictionary<string, string> profileObj = ProfileManager.GetProfileFromHWND(hwnd);
-                Profile profile = new Profile(profileObj);
-
-                EnvironmentManager.AddProfileToEnvironment(profile, environment);
+            }
+            catch (Exception exception)
+            {
+                ResourceManager.WriteLog(exception);
+                return false;
             }
         }
     }

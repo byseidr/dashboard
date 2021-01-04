@@ -10,18 +10,49 @@ namespace dashboard
         public static dynamic environments;
         public static string configPath = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\.config\dashboard\environments.json");
 
-        public static object GetEnvironment(string environmentName)
+        public EnvironmentManager()
         {
-            string envsPath = configPath;
-            environments = JsonConvert.DeserializeObject(System.IO.File.ReadAllText(envsPath));
-            return environments[environmentName];
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.MissingMemberHandling = MissingMemberHandling.Error;
         }
 
-        public static void AddProfileToEnvironment(Profile profile, string environmentName)
+        public static object GetEnvironment(string environmentName)
         {
-            JArray environment = (JArray)EnvironmentManager.GetEnvironment(environmentName);
-            environment.Add(JToken.FromObject(profile));
-            File.WriteAllText(configPath, EnvironmentManager.environments.ToString());
+            if (File.Exists(configPath))
+            {
+                try
+                {
+                    environments = JsonConvert.DeserializeObject(File.ReadAllText(configPath));
+
+                    return environments[environmentName];
+                }
+                catch (Exception exception)
+                {
+                    ResourceManager.WriteLog(exception);
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static Boolean AddProfileToEnvironment(Profile profile, string environmentName)
+        {
+            try
+            {
+                JArray environment = (JArray)EnvironmentManager.GetEnvironment(environmentName);
+                environment.Add(JToken.FromObject(profile));
+                File.WriteAllText(configPath, EnvironmentManager.environments.ToString());
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                ResourceManager.WriteLog(exception);
+                return false;
+            }
         }
     }
 }

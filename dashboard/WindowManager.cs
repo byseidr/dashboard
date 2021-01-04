@@ -39,22 +39,23 @@ namespace dashboard
 
         public static IntPtr GetWindowByExe(string exe, string args)
         {
-            ManagementObjectSearcher mos = new ManagementObjectSearcher(ProcessManager.GetProcessQueryByExe(exe, args));
-
-            foreach (ManagementObject mo in mos.Get())
+            try
             {
-                try
+                ManagementObjectSearcher mos = new ManagementObjectSearcher(ProcessManager.GetProcessQueryByExe(exe, args));
+
+                foreach (ManagementObject mo in mos.Get())
                 {
                     Process p = Process.GetProcessById(Convert.ToInt32(mo["ProcessId"]));
                     return p.MainWindowHandle;
                 }
-                catch (Exception)
-                {
-                    return IntPtr.Zero;
-                }
-            }
 
-            return IntPtr.Zero;
+                return IntPtr.Zero;
+            }
+            catch (Exception exception)
+            {
+                ResourceManager.WriteLog(exception);
+                return IntPtr.Zero;
+            }
         }
 
         public static IntPtr GetWindowByTitle(string title)

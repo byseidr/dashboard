@@ -26,7 +26,7 @@ namespace dashboard
         public void SplitName()
         {
             // Filename is not empty and is not already a full path, meaning no arguments would exist
-            if (!string.IsNullOrEmpty(this.name) && !System.IO.File.Exists(this.name) && !Directory.Exists(this.name))
+            if (!string.IsNullOrEmpty(this.name) && !File.Exists(this.name) && !Directory.Exists(this.name))
             {
                 string filename = this.name;
 

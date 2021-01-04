@@ -48,8 +48,9 @@ namespace dashboard
                         { "ZPos", "" }
                     };
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    ResourceManager.WriteLog(exception);
                     return null;
                 }
             }
@@ -73,6 +74,7 @@ namespace dashboard
         private static void PositionWindow(string exe, string args, int x, int y, int cx, int cy, int zPos)
         {
             IntPtr hwnd = WindowManager.GetWindowByExe(exe, args);
+
             if (hwnd != IntPtr.Zero)
             {
                 ShowWindow(hwnd, 1);
