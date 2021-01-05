@@ -39,36 +39,41 @@ namespace dashboard
 
         public static IntPtr GetWindowByExe(string exe, string args)
         {
-            int processTimeout = 5;
             IntPtr result = IntPtr.Zero;
 
             try
             {
-                // Get the creation date and PID of every process who has this executable + these arguments as command line
+                // Get the creation date and PID of every process who has this executable + these arguments in the command line
                 ManagementObjectSearcher mos = new ManagementObjectSearcher(ProcessManager.GetProcessQueryByExe(exe, args));
                 // Create a list to store pairs made of the creation date => the PID of each process
-                List<KeyValuePair<DateTime, int>> processes = new List<KeyValuePair<DateTime, int>>();
+                List<KeyValuePair<DateTime, IntPtr>> processes = new List<KeyValuePair<DateTime, IntPtr>>();
 
-                // Loop through each query row and add the pairs of creation date => PID to the list created previously
+                // Loop through each query row, adding pairs of the creation date + the HWND obtained from the PID to the list
                 foreach (ManagementObject mo in mos.Get())
                 {
                     DateTime creationDate = ManagementDateTimeConverter.ToDateTime((string)mo["CreationDate"]);
                     int processId = Convert.ToInt32(mo["ProcessId"]);
-                    processes.Add(new KeyValuePair<DateTime, int>(creationDate, processId));
+                    Process p = Process.GetProcessById(processId);
+                    IntPtr hwnd = p.MainWindowHandle;
+
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        processes.Add(new KeyValuePair<DateTime, IntPtr>(creationDate, hwnd));
+                        Console.WriteLine(p.MainWindowTitle);
+                    }
                 }
 
                 // Sort the list in descendant order so, if there's more than one pair, we can find the most recent one later on
                 processes.Sort((pair1, pair2) => DateTime.Compare(pair2.Key, pair1.Key));
 
                 // Access the most recent pair using the first list item's index
-                Process p = Process.GetProcessById(processes[0].Value);
-                result = p.MainWindowHandle;
-
-                Console.WriteLine(processes[0].Value);
+                result = processes[0].Value;
 
                 // It's important to use a KeyValuePair list in this case because we need to, at the same time, make a
-                // relation between creation date and PID and also be able to reinforce an order in the list,
+                // relation between creation date and PID/HWND and also be able to reinforce an order in the list,
                 // which is not possible using a dictionary
+                // It's also important to generate the HWNDs inside the foreach loop, so we can check if the process
+                // has a window or not
             }
             catch (Exception exception)
             {
