@@ -10,49 +10,47 @@ namespace dashboard
         public static dynamic environments;
         public static string configPath = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\.config\dashboard\environments.json");
 
-        public EnvironmentManager()
-        {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.MissingMemberHandling = MissingMemberHandling.Error;
-        }
-
         public static object GetEnvironment(string environmentName)
         {
+            object result = null;
+
             if (File.Exists(configPath))
             {
                 try
                 {
-                    environments = JsonConvert.DeserializeObject(File.ReadAllText(configPath));
+                    JsonSerializerSettings settings = new JsonSerializerSettings();
+                    settings.MissingMemberHandling = MissingMemberHandling.Error;
+                    environments = JsonConvert.DeserializeObject(File.ReadAllText(configPath), settings);
 
-                    return environments[environmentName];
+                    result = environments[environmentName];
                 }
                 catch (Exception exception)
                 {
                     ResourceManager.WriteLog(exception);
-                    return null;
                 }
             }
-            else
-            {
-                return null;
-            }
+
+            return result;
         }
 
         public static Boolean AddProfileToEnvironment(Profile profile, string environmentName)
         {
+            Boolean result = false;
+
             try
             {
                 JArray environment = (JArray)EnvironmentManager.GetEnvironment(environmentName);
                 environment.Add(JToken.FromObject(profile));
                 File.WriteAllText(configPath, EnvironmentManager.environments.ToString());
 
-                return true;
+                result = true;
             }
             catch (Exception exception)
             {
                 ResourceManager.WriteLog(exception);
-                return false;
             }
+
+            return result;
         }
     }
 }

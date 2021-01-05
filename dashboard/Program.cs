@@ -31,6 +31,8 @@ namespace dashboard
 
         private static Boolean DoProfile(string[] args)
         {
+            Boolean result = false;
+
             try
             {
                 foreach (string arg in args)
@@ -42,25 +44,22 @@ namespace dashboard
                         //Console.WriteLine(profile["exe"]);
                         ProfileManager.RunProfile(profile);
 
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        result = true;
                     }
                 }
-
-                return false;
             }
             catch (Exception exception)
             {
                 ResourceManager.WriteLog(exception);
-                return false;
             }
+
+            return result;
         }
 
         private static Boolean DoEnvironment(string[] args)
         {
+            Boolean result = false;
+
             try
             {
                 dynamic environment = EnvironmentManager.GetEnvironment(args[0]);
@@ -74,25 +73,22 @@ namespace dashboard
                         //Console.WriteLine(profile["exe"]);
                         ProfileManager.RunProfile(profile);
 
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        result = true;
                     }
                 }
-
-                return false;
             }
             catch (Exception exception)
             {
                 ResourceManager.WriteLog(exception);
-                return false;
             }
+
+            return result;
         }
 
         private static Boolean DoAdd(string[] args)
         {
+            Boolean result = false;
+
             try
             {
                 string environment = args[0];
@@ -119,23 +115,16 @@ namespace dashboard
 
                         EnvironmentManager.AddProfileToEnvironment(profile, environment);
 
-                        return true;
+                        result = true;
                     }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
                 }
             }
             catch (Exception exception)
             {
                 ResourceManager.WriteLog(exception);
-                return false;
             }
+
+            return result;
         }
     }
 }

@@ -2,7 +2,7 @@
   "profiles": {
     "dashboard": {
       "commandName": "Project",
-      "commandLineArgs": "-e \"Goblin\""
+      "commandLineArgs": "-p \"chrome.exe;;0;0;570;500;bottom\""
     }
   }
 }

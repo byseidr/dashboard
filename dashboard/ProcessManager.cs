@@ -22,35 +22,37 @@ namespace dashboard
             exe = exe.Replace("\\", "\\\\");
             Resource file = new Resource(exe);
             file.GetRegPath();
-
-            string query;
-            query = @"SELECT ProcessId FROM Win32_Process WHERE ";
-            query += ExeCondition(exe, args);
-            query += ExeCondition(file.regPath, args, true);
+            
+            string result = null;
+            result = @"SELECT CreationDate, ProcessId FROM Win32_Process WHERE ";
+            result += ExeCondition(exe, args);
+            result += ExeCondition(file.regPath, args, true);
 
             string ExeCondition(string exe, string args, Boolean seq = false)
             {
-                if (String.IsNullOrEmpty(exe)) return "";
+                string localResult = "";
 
-                string where;
-                where = seq ? " OR " : "";
-                where += "CommandLine LIKE '" + exe + "%" + args + "%'";
-                where += " OR ";
-                where += "CommandLine LIKE '_" + exe + "%" + args + "%'";
-                where += " OR ";
-                where += "Name LIKE '" + exe + "%" + args + "%'";
+                if (!String.IsNullOrEmpty(exe))
+                {
+                    localResult = seq ? " OR " : "";
+                    localResult += "CommandLine LIKE '" + exe + "%" + args + "%'";
+                    localResult += " OR ";
+                    localResult += "CommandLine LIKE '_" + exe + "%" + args + "%'";
+                    localResult += " OR ";
+                    localResult += "Name LIKE '" + exe + "%" + args + "%'";
+                }
 
-                return where;
+                return localResult;
             }
 
-            return query;
+            return result;
         }
 
         public static string GetProcessQueryByPID(int pid)
         {
-            string query = @"SELECT ProcessId, CommandLine FROM Win32_Process WHERE ProcessId = " + pid;
+            string result = @"SELECT ProcessId, CommandLine FROM Win32_Process WHERE ProcessId = " + pid;
 
-            return query;
+            return result;
         }
     }
 }

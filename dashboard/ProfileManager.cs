@@ -25,6 +25,7 @@ namespace dashboard
         {
             int pid = ProcessManager.GetProcessByHWND(hwnd);
             string query = ProcessManager.GetProcessQueryByPID(pid);
+            Dictionary<string, string> result = null;
 
             ManagementObjectSearcher mos = new ManagementObjectSearcher(query);
 
@@ -37,7 +38,7 @@ namespace dashboard
                     file.SplitName();
                     Dictionary<string, int> position = WindowManager.GetWindowPosition(p.MainWindowTitle);
 
-                    return new Dictionary<string, string>()
+                    result = new Dictionary<string, string>()
                     {
                         { "Exe", file.name },
                         { "Args", file.args },
@@ -51,11 +52,10 @@ namespace dashboard
                 catch (Exception exception)
                 {
                     ResourceManager.WriteLog(exception);
-                    return null;
                 }
             }
 
-            return null;
+            return result;
         }
 
         public static void RunProfile(Profile profile)
