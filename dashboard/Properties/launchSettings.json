@@ -2,7 +2,7 @@
   "profiles": {
     "dashboard": {
       "commandName": "Project",
-      "commandLineArgs": "-p \"chrome.exe;;0;0;570;500;bottom\""
+      "commandLineArgs": "-p \"code;;0;0;570;500;bottom\""
     }
   }
 }
