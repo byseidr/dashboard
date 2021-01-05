@@ -13,10 +13,6 @@ namespace dashboard
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        // FindWindow
-        [DllImport("user32.dll", EntryPoint = "FindWindow")]
-        private extern static IntPtr FindWindow(string lpClassName, string lpWindowName);
-
         // GetWindowRect
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -32,6 +28,18 @@ namespace dashboard
             public int Bottom;
         }
 
+        // FindWindow
+        [DllImport("user32.dll", EntryPoint = "FindWindow")]
+        private extern static IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        // ShowWindow
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
+
+        // SetWindowPos
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
+
         public static IntPtr GetActiveWindow()
         {
             return GetForegroundWindow();
@@ -43,37 +51,22 @@ namespace dashboard
 
             try
             {
-                // Get the creation date and PID of every process who has this executable + these arguments in the command line
                 ManagementObjectSearcher mos = new ManagementObjectSearcher(ProcessManager.GetProcessQueryByExe(exe, args));
-                // Create a list to store pairs made of the creation date => the PID of each process
-                List<KeyValuePair<DateTime, IntPtr>> processes = new List<KeyValuePair<DateTime, IntPtr>>();
-
-                // Loop through each query row, adding pairs of the creation date + the HWND obtained from the PID to the list
+                
                 foreach (ManagementObject mo in mos.Get())
                 {
-                    DateTime creationDate = ManagementDateTimeConverter.ToDateTime((string)mo["CreationDate"]);
-                    int processId = Convert.ToInt32(mo["ProcessId"]);
-                    Process p = Process.GetProcessById(processId);
-                    IntPtr hwnd = p.MainWindowHandle;
+                    Process p = Process.GetProcessById(Convert.ToInt32(mo["ProcessId"]));
+                    result = p.MainWindowHandle;
 
-                    if (hwnd != IntPtr.Zero)
+                    if (result != IntPtr.Zero)
                     {
-                        processes.Add(new KeyValuePair<DateTime, IntPtr>(creationDate, hwnd));
-                        Console.WriteLine(p.MainWindowTitle);
+                        break;
+                    }
+                    else
+                    {
+                        continue;
                     }
                 }
-
-                // Sort the list in descendant order so, if there's more than one pair, we can find the most recent one later on
-                processes.Sort((pair1, pair2) => DateTime.Compare(pair2.Key, pair1.Key));
-
-                // Access the most recent pair using the first list item's index
-                result = processes[0].Value;
-
-                // It's important to use a KeyValuePair list in this case because we need to, at the same time, make a
-                // relation between creation date and PID/HWND and also be able to reinforce an order in the list,
-                // which is not possible using a dictionary
-                // It's also important to generate the HWNDs inside the foreach loop, so we can check if the process
-                // has a window or not
             }
             catch (Exception exception)
             {
@@ -108,6 +101,17 @@ namespace dashboard
             }
 
             return result;
+        }
+
+        public static void PositionWindow(string exe, string args, int x, int y, int cx, int cy, int zPos)
+        {
+            IntPtr hwnd = GetWindowByExe(exe, args);
+
+            if (hwnd != IntPtr.Zero)
+            {
+                ShowWindow(hwnd, 1);
+                SetWindowPos(hwnd, zPos, x, y, cx, cy, 0x00);
+            }
         }
     }
 }

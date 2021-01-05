@@ -9,18 +9,6 @@ namespace dashboard
 {
     class ProfileManager
     {
-        // FindWindow
-        [DllImport("user32.dll", EntryPoint = "FindWindow")]
-        private extern static IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        // ShowWindow
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
-
-        // SetWindowPos
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
-
         public static Dictionary<string, string> GetProfileFromHWND(IntPtr hwnd)
         {
             int pid = ProcessManager.GetProcessByHWND(hwnd);
@@ -68,18 +56,7 @@ namespace dashboard
 
             Thread.Sleep(1000);
 
-            PositionWindow(profile.Exe, profile.Args, profile.X, profile.Y, profile.CX, profile.CY, profile.ZPos);
-        }
-
-        private static void PositionWindow(string exe, string args, int x, int y, int cx, int cy, int zPos)
-        {
-            IntPtr hwnd = WindowManager.GetWindowByExe(exe, args);
-
-            if (hwnd != IntPtr.Zero)
-            {
-                ShowWindow(hwnd, 1);
-                SetWindowPos(hwnd, zPos, x, y, cx, cy, 0x00);
-            }
+            WindowManager.PositionWindow(profile.Exe, profile.Args, profile.X, profile.Y, profile.CX, profile.CY, profile.ZPos);
         }
     }
 }
