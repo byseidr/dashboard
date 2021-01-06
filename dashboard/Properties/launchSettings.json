@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dashboard": {
-      "commandName": "Project",
-      "commandLineArgs": "-p \"code;;0;0;570;500;bottom\""
+      "commandName": "Project"
     }
   }
 }
