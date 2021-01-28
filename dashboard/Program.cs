@@ -40,12 +40,13 @@ namespace dashboard
             {
                 foreach (string arg in args)
                 {
-                    Profile profile = new Profile(arg.Split(";"));
+                    Profile profile = new Profile();
+                    profile.GetProfile(arg);
 
                     if (!String.IsNullOrEmpty(profile.Exe))
                     {
                         //Console.WriteLine(profile["exe"]);
-                        ProfileManager.RunProfile(profile);
+                        Profile.RunProfile(profile);
 
                         result = true;
                     }
@@ -53,7 +54,7 @@ namespace dashboard
             }
             catch (Exception exception)
             {
-                ResourceManager.WriteLog(exception);
+                Resource.WriteLog(exception);
             }
 
             return result;
@@ -65,16 +66,17 @@ namespace dashboard
 
             try
             {
-                dynamic environment = EnvironmentManager.GetEnvironment(args[0]);
+                dynamic environment = Workspace.GetEnvironment(args[0]);
 
                 foreach (JObject arg in environment)
                 {
-                    Profile profile = new Profile(arg.ToObject<Dictionary<string, string>>());
+                    Profile profile = new Profile();
+                    profile.GetProfile(arg.ToObject<Dictionary<string, string>>());
 
                     if (!String.IsNullOrEmpty(profile.Exe))
                     {
                         //Console.WriteLine(profile["exe"]);
-                        ProfileManager.RunProfile(profile);
+                        Profile.RunProfile(profile);
 
                         result = true;
                     }
@@ -82,7 +84,7 @@ namespace dashboard
             }
             catch (Exception exception)
             {
-                ResourceManager.WriteLog(exception);
+                Resource.WriteLog(exception);
             }
 
             return result;
@@ -103,20 +105,20 @@ namespace dashboard
 
                     if (source == "active")
                     {
-                        hwnd = WindowManager.GetActiveWindow();
+                        hwnd = Profile.GetHWND();
                     }
                     else
                     {
-                        hwnd = WindowManager.GetWindowByTitle(source);
+                        hwnd = Profile.GetHWND(source);
                     }
 
 
                     if (hwnd != IntPtr.Zero)
                     {
-                        Dictionary<string, string> profileObj = ProfileManager.GetProfileFromHWND(hwnd);
-                        Profile profile = new Profile(profileObj);
+                        Profile profile = new Profile();
+                        profile.GetProfile(hwnd);
 
-                        EnvironmentManager.AddProfileToEnvironment(profile, environment);
+                        Workspace.AddProfileToEnvironment(profile, environment);
 
                         result = true;
                     }
@@ -124,7 +126,7 @@ namespace dashboard
             }
             catch (Exception exception)
             {
-                ResourceManager.WriteLog(exception);
+                Resource.WriteLog(exception);
             }
 
             return result;

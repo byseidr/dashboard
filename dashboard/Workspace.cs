@@ -5,7 +5,7 @@ using System.IO;
 
 namespace dashboard
 {
-    class EnvironmentManager
+    class Workspace
     {
         public static dynamic environments;
         public static string configPath = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\.config\dashboard\environments.json");
@@ -26,7 +26,7 @@ namespace dashboard
                 }
                 catch (Exception exception)
                 {
-                    ResourceManager.WriteLog(exception);
+                    Resource.WriteLog(exception);
                 }
             }
 
@@ -39,15 +39,15 @@ namespace dashboard
 
             try
             {
-                JArray environment = (JArray)EnvironmentManager.GetEnvironment(environmentName);
+                JArray environment = (JArray)Workspace.GetEnvironment(environmentName);
                 environment.Add(JToken.FromObject(profile));
-                File.WriteAllText(configPath, EnvironmentManager.environments.ToString());
+                File.WriteAllText(configPath, Workspace.environments.ToString());
 
                 result = true;
             }
             catch (Exception exception)
             {
-                ResourceManager.WriteLog(exception);
+                Resource.WriteLog(exception);
             }
 
             return result;
