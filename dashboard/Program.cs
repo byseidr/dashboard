@@ -9,22 +9,25 @@ namespace dashboard
     {
         static void Main(string[] args)
         {
-            string option = args[0];
-            args = args.Where((e, i) => i != 0).ToArray();
-
             if (args.Length > 0)
             {
-                switch (option)
+                string option = args[0];
+                args = args.Where((e, i) => i != 0).ToArray();
+
+                if (args.Length > 0)
                 {
-                    case "-p":
-                        DoProfile(args);
-                        break;
-                    case "-e":
-                        DoEnvironment(args);
-                        break;
-                    case "-a":
-                        DoAdd(args);
-                        break;
+                    switch (option)
+                    {
+                        case "-p":
+                            DoProfile(args);
+                            break;
+                        case "-e":
+                            DoEnvironment(args);
+                            break;
+                        case "-a":
+                            DoAdd(args);
+                            break;
+                    }
                 }
             }
         }
